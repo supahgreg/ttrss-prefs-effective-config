@@ -11,7 +11,7 @@ class Prefs_Effective_Config extends Plugin {
 
   function about() {
     return [
-      0.3, // version
+      0.4, // version
       'Shows your effective tt-rss config @ Preferences --> System', // description
       'wn', // author
       false, // is system
@@ -54,11 +54,11 @@ class Prefs_Effective_Config extends Plugin {
                 <table id='config-items-list'>
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Effective Value</th>
-                      <th>Environment Variable Value</th>
-                      <th>Default Value</th>
-                      <th>Type Hint</th>
+                      <th>${__('Name')}</th>
+                      <th>${__('Effective Value')}</th>
+                      <th>${__('Environment Variable Value')}</th>
+                      <th>${__('Default Value')}</th>
+                      <th>${__('Type Hint')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -86,7 +86,7 @@ class Prefs_Effective_Config extends Plugin {
 
   function get_effective_config() {
     if (!self::is_admin()) {
-      print format_error('Access forbidden.');
+      print Errors::to_json(Errors::E_UNAUTHORIZED);
       return;
     }
 
