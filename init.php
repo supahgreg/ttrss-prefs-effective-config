@@ -11,7 +11,7 @@ class Prefs_Effective_Config extends Plugin {
 
   function about() {
     return [
-      0.2, // version
+      0.3, // version
       'Shows your effective tt-rss config @ Preferences --> System', // description
       'wn', // author
       false, // is system
@@ -46,12 +46,12 @@ class Prefs_Effective_Config extends Plugin {
                   #config-items-list { text-align: left; border-spacing: 0; }
                   #config-items-list .redacted { opacity: 0.5; }
                   #config-items-list th { border-bottom: 1px solid #000; }
-                  #config-items-list tbody > tr:hover { background: #eee; }
+                  #config-items-list tbody tr:hover { background: #eee; }
                   #config-items-list tbody td { padding: 5px; }
                   #config-items-list td:not(:last-child) { border-right: 1px solid #ccc; }
                 </style>
 
-                <table id='config-items-list' style='text-align: left;'>
+                <table id='config-items-list'>
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -82,10 +82,6 @@ class Prefs_Effective_Config extends Plugin {
           <span class='loading'><?= __('Loading, please wait...') ?></span>
       </div>
 <?php
-  }
-
-  private function is_admin() {
-    return ($_SESSION['access_level'] ?? 0) >= 10;
   }
 
   function get_effective_config() {
@@ -124,5 +120,8 @@ class Prefs_Effective_Config extends Plugin {
 
     print json_encode($ret);
   }
-}
 
+  private function is_admin() {
+    return ($_SESSION['access_level'] ?? 0) >= 10;
+  }
+}
