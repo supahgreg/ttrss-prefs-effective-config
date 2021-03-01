@@ -8,6 +8,6 @@ Installation
 ---------------------
 1. Clone the repo to **prefs_effective_config** in your tt-rss **plugins.local** directory:
 
-   `git clone https://github.com/supahgreg/ttrss-prefs-effective-config.git` prefs_effective_config
+   `git clone https://github.com/supahgreg/ttrss-prefs-effective-config.git prefs_effective_config`
 
 2. Enable the plugin @ Preferences / Plugins
