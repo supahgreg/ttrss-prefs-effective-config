@@ -11,7 +11,7 @@ class Prefs_Effective_Config extends Plugin {
 
   function about() {
     return [
-      0.4, // version
+      0.5, // version
       'Shows your effective tt-rss config @ Preferences --> System', // description
       'wn', // author
       false, // is system
@@ -44,7 +44,10 @@ class Prefs_Effective_Config extends Plugin {
                 this.attr('content', `
                 <style type='text/css'>
                   #config-items-list { text-align: left; border-spacing: 0; }
+
                   #config-items-list .redacted { opacity: 0.5; }
+                  #config-items-list .envvar_prefix { opacity: 0.4; }
+
                   #config-items-list th { border-bottom: 1px solid #000; }
                   #config-items-list tbody tr:hover { background: #eee; }
                   #config-items-list tbody td { padding: 5px; }
@@ -63,13 +66,13 @@ class Prefs_Effective_Config extends Plugin {
                   </thead>
                   <tbody>
                   ${
-                    reply.map(param => `
+                    reply.params.map(param => `
                       <tr>
-                        <td>${param['name']}</td>
-                        ${param['should_redact'] ? `<td class='redacted'>redacted</td>` : `<td>${param['effective_val']}</td>`}
-                        ${param['should_redact'] ? `<td class='redacted'>${param['env_val']}</td>` : `<td>${param['env_val']}</td>`}
-                        <td>${param['default_val']}</td>
-                        <td>${param['type_hint']}</td>
+                        <td><span class="envvar_prefix">${reply.envvar_prefix}</span>${param.name}</td>
+                        ${param.should_redact ? `<td class='redacted'>redacted</td>` : `<td>${param.effective_val}</td>`}
+                        ${param.should_redact ? `<td class='redacted'>${param.env_val}</td>` : `<td>${param.env_val}</td>`}
+                        <td>${param.default_val}</td>
+                        <td>${param.type_hint}</td>
                       </tr>
                     `).join('')
                   }
@@ -97,19 +100,19 @@ class Prefs_Effective_Config extends Plugin {
     $envvar_prefix = $cfg_rc->getConstant('_ENVVAR_PREFIX');
     $defaults = $cfg_rc->getConstant('_DEFAULTS');
 
-    $params = $cfg_rc->getProperty('params');
-    $params->setAccessible(true);
+    $params_rc = $cfg_rc->getProperty('params');
+    $params_rc->setAccessible(true);
 
-    $ret = [];
+    $params = [];
 
-    foreach ($params->getValue($cfg_instance) as $p => $v) {
+    foreach ($params_rc->getValue($cfg_instance) as $p => $v) {
       list ($pval, $ptype) = $v;
       $env_val = getenv($envvar_prefix . $p);
       list ($defval, $deftype) = $defaults[$cfg_rc->getConstant($p)];
       $should_redact = in_array($p, self::CONFIG_KEYS_TO_MASK);
 
-      $ret[] = [
-        'name' => $envvar_prefix . $p,
+      $params[] = [
+        'name' => $p,
         'should_redact' => $should_redact,
         'effective_val' => $should_redact ? 'redacted' : $pval,
         'env_val' => $env_val ? $should_redact ? 'redacted' : $env_val : '',
@@ -118,7 +121,10 @@ class Prefs_Effective_Config extends Plugin {
       ];
     }
 
-    print json_encode($ret);
+    print json_encode([
+      'envvar_prefix' => $envvar_prefix,
+      'params' => $params,
+    ]);
   }
 
   private function is_admin() {
