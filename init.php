@@ -11,7 +11,7 @@ class Prefs_Effective_Config extends Plugin {
 
   function about() {
     return [
-      0.5, // version
+      0.6, // version
       'Shows your effective tt-rss config @ Preferences --> System', // description
       'wn', // author
       false, // is system
@@ -51,6 +51,9 @@ class Prefs_Effective_Config extends Plugin {
                   #config-items-list th { border-bottom: 1px solid #000; }
                   #config-items-list tbody tr:hover { background: #eee; }
                   #config-items-list tbody td { padding: 5px; }
+                  #config-items-list tbody td.green { background-color: rgba(0, 255, 0, 0.1); }
+                  #config-items-list tbody td.red { background-color: rgba(255, 0, 0, 0.1); }
+                  #config-items-list tbody td.gray { background-color: rgba(128, 128, 128, 0.1); }
                   #config-items-list td:not(:last-child) { border-right: 1px solid #ccc; }
                 </style>
 
@@ -69,9 +72,12 @@ class Prefs_Effective_Config extends Plugin {
                     reply.params.map(param => `
                       <tr>
                         <td><span class="envvar_prefix">${reply.envvar_prefix}</span>${param.name}</td>
-                        ${param.should_redact ? `<td class='redacted'>redacted</td>` : `<td>${param.effective_val}</td>`}
-                        ${param.should_redact ? `<td class='redacted'>${param.env_val}</td>` : `<td>${param.env_val}</td>`}
-                        <td>${param.default_val}</td>
+                        ${param.should_redact ? `<td class='redacted gray'>redacted</td>` :
+                            `<td class='${[param.env_val, param.default_val].includes(param.effective_val) ? 'green' : 'red'}'>${param.effective_val}</td>`}
+                        ${param.should_redact ? `<td class='redacted gray'>${param.env_val}</td>` :
+                            `<td class='${param.effective_val == param.env_val ? 'green' : 'red'}'>${param.env_val}</td>`}
+                        <td class='${param.should_redact ? 'gray' :
+                            param.effective_val == param.default_val ? 'green' : 'red'}'>${param.default_val}</td>
                         <td>${param.type_hint}</td>
                       </tr>
                     `).join('')
@@ -114,9 +120,9 @@ class Prefs_Effective_Config extends Plugin {
       $params[] = [
         'name' => $p,
         'should_redact' => $should_redact,
-        'effective_val' => $should_redact ? 'redacted' : $pval,
+        'effective_val' => $should_redact ? 'redacted' : strval(self::maybe_bool_to_str($pval)),
         'env_val' => $env_val ? $should_redact ? 'redacted' : $env_val : '',
-        'default_val' => $defval,
+        'default_val' => strval($defval),
         'type_hint' => self::PARAM_TYPE_TO_NAME[$ptype],
       ];
     }
@@ -129,5 +135,9 @@ class Prefs_Effective_Config extends Plugin {
 
   private function is_admin() {
     return ($_SESSION['access_level'] ?? 0) >= 10;
+  }
+
+  private function maybe_bool_to_str($val) {
+    return $val === true ? 'true' : ($val === false ? 'false' : $val);
   }
 }
